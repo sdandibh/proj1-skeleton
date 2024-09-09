@@ -25,8 +25,8 @@ char *fgets_enhanced(FILE *f)
     char *temp;
     int buffersize = chunksize+1;
     char *nPos;
-    
-    s = malloc(buffersize);    
+
+    s = malloc(buffersize);
     if (s == NULL)
     {
         printf("Can't allocate %d bytes\n", buffersize);
@@ -37,6 +37,9 @@ char *fgets_enhanced(FILE *f)
     if (fgets(s, chunksize+1, f) == NULL)
     {
         printf("fgets returned NULL\n");
+        // fix for q2 (a) - free mem on fgets failure
+        free(s);
+        return NULL;
     } else {
         nPos = strchr(s, '\n');
         while (nPos == NULL)
@@ -46,9 +49,10 @@ char *fgets_enhanced(FILE *f)
             if (temp == NULL)
             {
                 printf("Can't realloc %d bytes\n", chunksize);
+                // fix for q2 (b)
                 free(s); /* clean up previously allocated buffer */
-                s = NULL;
-                break;
+                //s = NULL;
+                return NULL;
             } else {
                 s = temp;
                 /* read starting at the 0 that ended the previous chunk */
@@ -62,8 +66,14 @@ char *fgets_enhanced(FILE *f)
         }
     }
     /* ensure that we zero-terminate the returned buffer */
-    s[nPos-s] = 0;
+    if (nPos != NULL) {
+      s[nPos - s] = 0;
+    } else {
+      s[buffersize = chunksize - 1] = 0; // fix for q2(c)
+    }
     return s;
+    //s[nPos-s] = 0;
+    //return s;
 }
 
 /* Delete the first node with the provided arg as data. */
@@ -81,8 +91,7 @@ void delete_node(long int num)
             } else {
                 m->next = temp->next;
             }
-            // fix for q2 (a)
-            free(temp->str);
+            free(temp->str); // fix for q2 (a)
             free(temp);
             return;
         } else {
@@ -100,15 +109,12 @@ void delete_all()
     temp=p;
     while (temp!=NULL)
     {
-
         temp2 = temp;
         temp = temp->next;
 
         free(temp2->str);
         free(temp2);
     }
-    // setting to NULL for q2 (B)
-    p = NULL;
 }
 
 void prepend(long int num, char* name)
@@ -117,7 +123,7 @@ void prepend(long int num, char* name)
     struct node *temp;
     temp = malloc(sizeof(struct node));
     temp->data = num;
-    temp->str = name;
+    temp->str = strdup(name); // fix for q2 (a)
 
     /* usual linked-list implementation drill with p null vs non null */
     if (p==NULL)
@@ -154,7 +160,7 @@ void add_after(long int num, int loc, char* name)
         }
         temp = malloc(sizeof(struct node));
         temp->data = num;
-        temp->str = name;
+        temp->str = strdup(name);
         n->next = temp;
         n = temp;
         n->next = r;
@@ -171,8 +177,9 @@ void edit(long int oldNum, long int newNum, char* name)
         if(temp->data==oldNum)
         {
             temp->data = newNum;
-            free (temp->str);
-            temp->str = name;
+            free(temp->str); // fix for q2 (s) free old string mem
+            //free(temp->str);
+            temp->str = strdup(name); // fix for q2 (a)
             return;
         } else {
             m = temp;
@@ -182,7 +189,6 @@ void edit(long int oldNum, long int newNum, char* name)
     printf("ELEMENT %ld NOT FOUND\n", oldNum);
 }
 
-#define MAX_NAME_LENGTH 100
 /* Duplicate given node, inserting copy before original. */
 void duplicate(long int num)
 {
@@ -196,6 +202,7 @@ void duplicate(long int num)
             char *name = malloc(len);
             strcpy(name, temp->str);
             add_after(temp->data, i, name);
+            free(name); // fix for q2(a)
             return;
         } else {
             i++;
@@ -210,7 +217,7 @@ void append(long int num, char* name)
     /* create new node, populate with data */
     struct node *temp = malloc(sizeof(struct node));
     temp->data = num;
-    temp->str = name;
+    temp->str = strdup(name); // fix for q2 (a)
 
     struct node *r = p;    
     /* add at beginning when p is null */
@@ -241,7 +248,7 @@ void display()
     {
         printf(" -> %li",r->data);
         printf(", %s",r->str);
-        
+
         r = r->next;
     }
     printf("\n");
