@@ -193,7 +193,11 @@ void duplicate(long int num)
         if (temp->data==num)
         {
             long len = strlen(temp->str)>0 ? strlen(temp->str) : 0;
-            char *name = malloc(len);
+            // ensuring that name has enough memory to store the string
+            // plus the null terminator!
+            // fix for q2 (c)
+            char *name = malloc(strlen(temp->str) + 1);
+            //char *name = malloc(len);
             strcpy(name, temp->str);
             add_after(temp->data, i, name);
             return;

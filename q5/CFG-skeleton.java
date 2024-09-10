@@ -14,7 +14,7 @@ public class CFG {
 
       int position;
       MethodNode method;
-      lassNode clazz;
+      ClassNode clazz;
 
   Node(int p, MethodNode m, ClassNode c) {
     position = p; method = m; clazz = c;
